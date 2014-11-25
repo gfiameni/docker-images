@@ -31,5 +31,7 @@ if [[ $1 == "-d" ]]; then
 fi
 
 if [[ $1 == "-bash" ]]; then
-  cd /exercises && /bin/bash
+  cd / && git clone https://github.com/gfiameni/mapreduce-exercises > /dev/null 2>&1
+  echo "alias show-exercises=\"cat /mapreduce-exercises/README\"" >> /root/.bashrc
+  cd /mapreduce-exercises && /bin/bash
 fi

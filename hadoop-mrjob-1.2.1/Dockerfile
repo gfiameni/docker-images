@@ -2,7 +2,6 @@
 #
 # Taken inputs from sequenceiq/hadoop image
 
-
 FROM ubuntu:14.04
 MAINTAINER www.hpc.cineca.it (Giuseppe Fiameni)
 
@@ -82,8 +81,6 @@ RUN sed s/HOSTNAME/localhost/ /usr/local/hadoop/conf/mapred-site.xml.template > 
 # Disable IPv6
 ADD system/sysctl.conf /etc/sysctl.conf
 ADD system/start-dfs.sh $HADOOP_PREFIX/bin/start-dfs.sh
-# ADD system/.bashrc /root/.bashrc
-RUN echo "alias show-exercises=\"cat /exercises/readme\"" >> /root/.bashrc
 ADD system/.mrjob.conf /root/.mrjob.conf
 
 
@@ -95,10 +92,8 @@ RUN chown root:root /root/.ssh/config
 
 # Add bootstrap file
 ADD bootstrap.sh /etc/bootstrap.sh
-ADD exercises /exercises
 RUN chown root:root /etc/bootstrap.sh
 RUN chmod 700 /etc/bootstrap.sh
-
 ENV BOOTSTRAP /etc/bootstrap.sh
 
 # workingaround docker.io build error
