@@ -1,10 +1,8 @@
-# Creates pseudo distributed hadoop 2.5.1
+# Creates pseudo distributed hadoop 2.5.2
 #
-# docker build -t sequenceiq/hadoop .
-
 
 FROM ubuntu:14.04
-MAINTAINER Cineca
+MAINTAINER www.hpc.cineca.it
 
 USER root
 #Setup build environment for libpam
@@ -18,9 +16,10 @@ RUN apt-get install -y curl tar sudo openssh-server openssh-client rsync softwar
 
 # install pip and mrjob
 RUN apt-get install -y python-pip python-numpy python-scipy
+
 # RUN pip install -q mrjob
-RUN git clone https://github.com/yelp/mrjob
-RUN cd mrjob && python setup.py install
+# RUN git clone https://github.com/yelp/mrjob
+# RUN cd mrjob && python setup.py install
 
 # passwordless ssh
 RUN test -f /etc/ssh/ssh_host_dsa_key || ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
@@ -40,17 +39,15 @@ RUN echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-sel
 RUN add-apt-repository -y ppa:webupd8team/java
 RUN apt-get update
 RUN apt-get install -y oracle-java7-installer
-
 ENV JAVA_HOME /usr/lib/jvm/java-7-oracle
 ENV PATH $PATH:$JAVA_HOME/bin
 
 
 # hadoop
-# RUN curl -s http://www.eu.apache.org/dist/hadoop/common/hadoop-2.5.1/hadoop-2.5.1.tar.gz | tar -xz -C /usr/local/
-RUN curl -s http://www.eu.apache.org/dist/hadoop/common/hadoop-2.4.0/hadoop-2.4.0.tar.gz | tar -xz -C /usr/local/
+RUN curl -s http://www.eu.apache.org/dist/hadoop/common/hadoop-2.5.2/hadoop-2.5.2.tar.gz | tar -xz -C /usr/local/
 
-# RUN cd /usr/local && ln -s ./hadoop-2.5.1 hadoop
-RUN cd /usr/local && ln -s ./hadoop-2.4.0 hadoop
+
+RUN cd /usr/local && ln -s ./hadoop-2.5.2 hadoop
 
 ENV HADOOP_PREFIX /usr/local/hadoop
 ENV HADOOP_HOME /usr/local/hadoop
@@ -76,12 +73,15 @@ ADD hdfs-site.xml $HADOOP_PREFIX/etc/hadoop/hdfs-site.xml
 ADD mapred-site.xml $HADOOP_PREFIX/etc/hadoop/mapred-site.xml
 ADD yarn-site.xml $HADOOP_PREFIX/etc/hadoop/yarn-site.xml
 
+# I have to replace these start-up files to avoid secondary name node to start up
+ADD sbin/start-dfs.sh $HADOOP_PREFIX/sbin/start-dfs.sh
+ADD sbin/stop-dfs.sh $HADOOP_PREFIX/sbin/stop-dfs.sh
+
 RUN $HADOOP_PREFIX/bin/hdfs namenode -format
 
 # fixing the libhadoop.so like a boss
 RUN rm  /usr/local/hadoop/lib/native/*
-# RUN curl -Ls http://dl.bintray.com/sequenceiq/sequenceiq-bin/hadoop-native-64-2.5.0.tar|tar -xz -C /usr/local/hadoop/lib/native/
-RUN curl -Ls http://dl.bintray.com/sequenceiq/sequenceiq-bin/hadoop-native-64-2.4.0.tar | tar -x -C /usr/local/hadoop/lib/native/
+RUN curl -Ls http://dl.bintray.com/sequenceiq/sequenceiq-bin/hadoop-native-64-2.5.2.tar | tar -xz -C /usr/local/hadoop/lib/native/
 
 ADD ssh_config /root/.ssh/config
 RUN chmod 600 /root/.ssh/config
@@ -96,7 +96,6 @@ RUN chown root:root /root/.ssh/config
 # ADD supervisord.conf /etc/supervisord.conf
 
 ADD bootstrap.sh /etc/bootstrap.sh
-ADD exercises /exercises
 RUN chown root:root /etc/bootstrap.sh
 RUN chmod 700 /etc/bootstrap.sh
 
@@ -113,7 +112,7 @@ RUN echo "UsePAM no" >> /etc/ssh/sshd_config
 RUN echo "Port 2122" >> /etc/ssh/sshd_config
 
 RUN service ssh start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -mkdir -p /user/root
-RUN service ssh start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_PREFIX/etc/hadoop/ input
+# RUN service ssh start && $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh && $HADOOP_PREFIX/sbin/start-dfs.sh && $HADOOP_PREFIX/bin/hdfs dfs -put $HADOOP_PREFIX/etc/hadoop/ input
 
 CMD ["/etc/bootstrap.sh", "-d"]
 
