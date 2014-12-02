@@ -3,7 +3,7 @@
 : ${HADOOP_PREFIX:=/usr/local/hadoop}
 
 $HADOOP_PREFIX/conf/hadoop-env.sh
-export PATH=$PATH:$HADOOP_PREFIX/bin:$JAVA_HOME/bin
+export PATH=$PATH:$HADOOP_PREFIX/bin:$HADOOP_PREFIX/sbin:$JAVA_HOME/bin
 
 echo "###################################"
 echo " The system is being inizialized..."
@@ -31,7 +31,7 @@ if [[ $1 == "-d" ]]; then
 fi
 
 if [[ $1 == "-bash" ]]; then
-  cd / && git clone https://github.com/gfiameni/mapreduce-exercises > /dev/null 2>&1
-  echo "alias show-exercises=\"cat /mapreduce-exercises/README\"" >> /root/.bashrc
-  cd /mapreduce-exercises && /bin/bash
+  cd / && git clone https://github.com/gfiameni/course-exercises > /dev/null 2>&1
+  echo "alias show-exercises=\"cat /course-exercises/README\"" >> /root/.bashrc
+  cd /course-exercises && /bin/bash
 fi
